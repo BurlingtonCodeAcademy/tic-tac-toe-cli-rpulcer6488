@@ -137,20 +137,54 @@ function congrats(winner) {
     console.log("CONGRATULATIONS Player " + players[winIndex].player + " - " + players[winIndex].name + ", YOU WON !!!");
 }
 
+function computerChoice() {
+    let choiceOK = false;
+    // Choose random # between 1 and 9
+    let choice = 1 + Math.floor(Math.random() * 9);
+    while(! choiceOK) {
+        console.log("Computer's choice is ... " + choice);
+        if(board[choice - 1] == "X" || board[choice - 1] == "O" ) {
+            // Try again - cell has already been previously chosen
+            choice = 1 + Math.floor(Math.random() * 9);
+        }
+        else {
+            choiceOK = true;
+        }
+    }
+
+    return choice;
+}
+
 start();
 
 async function start() {
     let gameOver = false;
     let turn = 0;
+    let computerPlayer = false;
+    let answer = "";
+    let squareNum = 0;
 
     // Get user choices and process according to game rules
-    let answer = await ask("Player X name? ");
-    answer = answer.trim();
-    players[0].name = answer;
+    // First ask if this game is Person vs. Person or Person vs. Computer
+    let prompt1 = "Please select game option:\n1. Person vs. Person\n2. Person vs. Computer\n3. Exit program\n> ";
+    let answer1 = await ask(prompt1);
+    answer1 = answer1.trim();
+    if(answer1 == "3") { process.exit(0); }
+    
+    // Get user names
+    let answer2 = await ask("Player X name? ");
+    answer2 = answer2.trim();
+    players[0].name = answer2;
 
-    answer = await ask("Player O name? ");
-    answer = answer.trim();
-    players[1].name = answer;
+    if(answer1 == "2") {
+        players[1].name = "COMPUTER";
+        computerPlayer = true;
+    }
+    else {
+        answer2 = await ask("Player O name? ");
+        answer2 = answer2.trim();
+        players[1].name = answer2;
+    }
 
     console.log("\nTic-Tac-Toe Game");
     console.log("----------------");
@@ -163,11 +197,16 @@ async function start() {
     while(! gameOver && turn < 9) {
         console.log("Turn: " + turn);
 
-        answer = await ask(players[playerIndex].name + "'s turn (" + players[playerIndex].player + "): ");
-        answer = answer.trim();
-        // console.log(answer);
+        if(playerIndex == 1 && computerPlayer) {
+            squareNum = computerChoice();
+        }
+        else {
+            answer = await ask(players[playerIndex].name + "'s turn (" + players[playerIndex].player + "): ");
+            answer = answer.trim();
+            // console.log(answer);
+            squareNum = Number.parseInt(answer);
+        }
 
-        let squareNum = Number.parseInt(answer);
         if(squareNum) {
             if(squareNum >= 1 && squareNum <=9) {
                 if(board[squareNum - 1] == "X" || board[squareNum - 1] == "O" ) {
